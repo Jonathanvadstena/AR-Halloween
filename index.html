@@ -30,16 +30,23 @@
           });
         }
       });
-      // iPhone: första tryck var som helst på skärmen låser upp alla ljud (osynligt, ingen knapp).
+      // iPhone: ett tryck på skärmen (efter att fingret lyfts) låser upp alla ljud. Ingen knapp visas.
+      var unlocked = false;
       function unlock() {
+        if (unlocked) return;
         allAudios.forEach(function (a) {
-          a.play().then(function () { a.pause(); a.currentTime = 0; }).catch(function () {});
-        });
-        ["touchstart", "touchend", "click"].forEach(function (ev) {
-          window.removeEventListener(ev, unlock);
+          var p = a.play();
+          if (p && p.then) {
+            p.then(function () {
+              a.pause();
+              a.currentTime = 0;
+              unlocked = true;
+            }).catch(function () {});
+          }
         });
       }
-      ["touchstart", "touchend", "click"].forEach(function (ev) {
+      // OBS: "touchstart" räknas inte på iPhone, bara "touchend" och "click".
+      ["touchend", "click"].forEach(function (ev) {
         window.addEventListener(ev, unlock);
       });
     </script>
